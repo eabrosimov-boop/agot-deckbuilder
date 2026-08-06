@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AGOT LCG — Deckbuilder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <h1>AGOT LCG <span>Deckbuilder</span></h1>
+    <input id="deck-name" type="text" value="My Deck" placeholder="Deck name" maxlength="60">
+    <div id="header-actions">
+      <label id="btn-import" title="Load existing deck JSON">
+        ↑ Import
+        <input type="file" id="file-import" accept=".json" style="display:none">
+      </label>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- LEFT: Card Browser -->
+    <section id="browser">
+      <div id="filters">
+        <select id="filter-house">
+          <option value="">All houses</option>
+          <option value="Stark">Stark</option>
+          <option value="Lannister">Lannister</option>
+          <option value="Baratheon">Baratheon</option>
+          <option value="Targaryen">Targaryen</option>
+          <option value="Greyjoy">Greyjoy</option>
+          <option value="Martell">Martell</option>
+          <option value="Neutral">Neutral</option>
+        </select>
+        <select id="filter-type">
+          <option value="">All types</option>
+          <option value="Character">Character</option>
+          <option value="Location">Location</option>
+          <option value="Attachment">Attachment</option>
+          <option value="Event">Event</option>
+          <option value="Plot">Plot</option>
+          <option value="House Card">House Card</option>
+          <option value="Agenda">Agenda</option>
+          <option value="Title">Title</option>
+        </select>
+        <select id="filter-set"><option value="">All sets</option></select>
+        <input id="filter-search" type="text" placeholder="Search by name…" autocomplete="off">
+        <span id="result-count"></span>
+      </div>
+      <div id="card-list-header" class="list-row header-row">
+        <span></span>
+        <span>Name</span>
+        <span>Type</span>
+        <span class="right">Stats</span>
+        <span></span>
+      </div>
+      <div id="card-list"></div>
+    </section>
+
+    <!-- RIGHT: Deck Panel -->
+    <section id="deck-panel">
+      <div id="deck-slots">
+        <div class="slot-row" id="slot-house">
+          <span class="slot-label">House Card</span>
+          <span id="slot-house-val" class="slot-empty">— not selected</span>
+          <button class="slot-x hidden" id="slot-house-x">×</button>
+        </div>
+        <div class="slot-row" id="slot-agenda">
+          <span class="slot-label">Agenda</span>
+          <span id="slot-agenda-val" class="slot-empty">— not selected</span>
+          <button class="slot-x hidden" id="slot-agenda-x">×</button>
+        </div>
+      </div>
+
+      <div class="deck-section">
+        <div class="deck-section-title">
+          Draw Deck&nbsp;<strong id="draw-total">0</strong>
+          <span id="draw-breakdown"></span>
+        </div>
+        <div id="deck-draw"></div>
+      </div>
+
+      <div class="deck-section">
+        <div class="deck-section-title">
+          Plots&nbsp;<strong id="plots-total">0</strong><span class="limit">/7</span>
+        </div>
+        <div id="deck-plots"></div>
+      </div>
+
+      <div id="deck-footer">
+        <button id="btn-clear">Clear</button>
+        <button id="btn-export" class="primary">⬇ Download JSON</button>
+      </div>
+    </section>
+
+  </main>
+
+</div>
+
+<!-- Card image tooltip -->
+<div id="tooltip">
+  <img id="tooltip-img" src="" alt="">
+  <div id="tooltip-info">
+    <div id="tooltip-name"></div>
+    <div id="tooltip-meta"></div>
+    <div id="tooltip-text"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
