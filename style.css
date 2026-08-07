@@ -207,7 +207,7 @@ main {
 /* ── DECK PANEL ──────────────────────────────────────────── */
 #deck-panel {
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: auto auto auto 1fr auto auto;
   overflow: hidden;
   background: var(--surface);
 }
@@ -243,7 +243,7 @@ main {
 
 /* deck sections */
 .deck-section { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-.deck-section:first-of-type { flex: 1; }
+.deck-section-draw { flex: 1; }
 
 .deck-section-title {
   font-size: 11px;

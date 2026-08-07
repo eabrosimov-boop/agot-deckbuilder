@@ -9,7 +9,7 @@ const state = {
   deck: {
     name:      'My Deck',
     houseCard: null,   // card object
-    agenda:    null,   // card object
+    agendas:   {},     // id -> count
     draw:      {},     // id -> count
     plots:     {},     // id -> count
   },
@@ -39,7 +39,6 @@ async function init() {
 
   // Deck actions
   document.getElementById('slot-house-x').addEventListener('click',  () => { state.deck.houseCard = null; syncDeck(); });
-  document.getElementById('slot-agenda-x').addEventListener('click', () => { state.deck.agenda    = null; syncDeck(); });
   document.getElementById('btn-clear').addEventListener('click',  clearDeck);
   document.getElementById('btn-export').addEventListener('click', exportJSON);
   document.getElementById('file-import').addEventListener('change', importJSON);
@@ -194,14 +193,15 @@ function statsHTML(c) {
 
 function countInDeck(card) {
   if (card.type === 'House Card') return state.deck.houseCard?.id === card.id ? 1 : 0;
-  if (card.type === 'Agenda')     return state.deck.agenda?.id    === card.id ? 1 : 0;
+  if (card.type === 'Agenda')     return state.deck.agendas[card.id] || 0;
   if (card.type === 'Plot')       return state.deck.plots[card.id] || 0;
   return state.deck.draw[card.id] || 0;
 }
 
 function maxCopies(card) {
-  if (card.type === 'House Card' || card.type === 'Agenda') return 1;
-  if (card.type === 'Plot')  return card.unique ? 1 : 2;
+  if (card.type === 'House Card') return 1;
+  if (card.type === 'Agenda') return card.unique ? 1 : 3;
+  if (card.type === 'Plot')   return 2;
   return card.unique ? 1 : 3;
 }
 
@@ -214,8 +214,9 @@ function addCard(card) {
   if (cur >= max) return;
 
   if (card.type === 'House Card') { state.deck.houseCard = card; }
-  else if (card.type === 'Agenda') { state.deck.agenda = card; }
-  else if (card.type === 'Plot') {
+  else if (card.type === 'Agenda') {
+    state.deck.agendas[card.id] = (state.deck.agendas[card.id] || 0) + 1;
+  } else if (card.type === 'Plot') {
     if (totalPlots() >= 7) return;
     state.deck.plots[card.id] = (state.deck.plots[card.id] || 0) + 1;
   } else if (DRAW_TYPES.includes(card.type)) {
@@ -234,6 +235,10 @@ function decCard(card, section) {
     if (!state.deck.plots[card.id]) return;
     state.deck.plots[card.id]--;
     if (state.deck.plots[card.id] === 0) delete state.deck.plots[card.id];
+  } else if (section === 'agendas') {
+    if (!state.deck.agendas[card.id]) return;
+    state.deck.agendas[card.id]--;
+    if (state.deck.agendas[card.id] === 0) delete state.deck.agendas[card.id];
   }
   syncDeck();
 }
@@ -241,7 +246,7 @@ function decCard(card, section) {
 function clearDeck() {
   if (!confirm('Clear the deck?')) return;
   state.deck.houseCard = null;
-  state.deck.agenda    = null;
+  state.deck.agendas   = {};
   state.deck.draw      = {};
   state.deck.plots     = {};
   syncDeck();
@@ -258,7 +263,18 @@ function syncDeck() {
 function renderDeck() {
   // Slots
   setSlot('house', state.deck.houseCard);
-  setSlot('agenda', state.deck.agenda);
+
+  // Agendas section
+  const agendaTotal = Object.values(state.deck.agendas).reduce((s, n) => s + n, 0);
+  document.getElementById('agenda-total').textContent = agendaTotal;
+  const agendasEl = document.getElementById('deck-agendas');
+  const afrag = document.createDocumentFragment();
+  Object.entries(state.deck.agendas)
+    .map(([id, count]) => ({ card: state.cardById.get(id), count }))
+    .filter(e => e.card)
+    .sort((a, b) => a.card.name.localeCompare(b.card.name))
+    .forEach(({ card, count }) => afrag.appendChild(makeDkRow(card, count, 'agendas')));
+  agendasEl.replaceChildren(afrag);
 
   // Draw deck
   const drawTotal = totalDraw();
@@ -415,9 +431,9 @@ function exportJSON() {
     name:       state.deck.name || 'My Deck',
     house:      state.deck.houseCard?.house || null,
     house_card: state.deck.houseCard?.id   || null,
-    agenda:     state.deck.agenda?.id      || null,
-    plots: Object.entries(state.deck.plots).map(([id, count]) => ({ id, count })),
-    draw:  Object.entries(state.deck.draw ).map(([id, count]) => ({ id, count })),
+    agendas: Object.entries(state.deck.agendas).map(([id, count]) => ({ id, count })),
+    plots:   Object.entries(state.deck.plots  ).map(([id, count]) => ({ id, count })),
+    draw:    Object.entries(state.deck.draw   ).map(([id, count]) => ({ id, count })),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
@@ -437,7 +453,10 @@ function importJSON(e) {
       const data = JSON.parse(ev.target.result);
       state.deck.name      = data.name || 'Imported';
       state.deck.houseCard = data.house_card ? state.cardById.get(data.house_card) || null : null;
-      state.deck.agenda    = data.agenda     ? state.cardById.get(data.agenda)     || null : null;
+      state.deck.agendas = {};
+      // backward compat: old format had agenda as single id string
+      if (data.agenda && state.cardById.has(data.agenda)) state.deck.agendas[data.agenda] = 1;
+      (data.agendas || []).forEach(({ id, count }) => { if (state.cardById.has(id)) state.deck.agendas[id] = count; });
       state.deck.draw  = {};
       state.deck.plots = {};
       (data.draw  || []).forEach(({ id, count }) => { if (state.cardById.has(id)) state.deck.draw[id]  = count; });
