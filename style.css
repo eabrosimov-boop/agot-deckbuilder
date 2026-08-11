@@ -242,8 +242,12 @@ main {
 .hidden { display: none !important; }
 
 /* deck sections */
-.deck-section { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-.deck-section-draw { flex: 1; }
+/* Agenda/Plots keep their natural size (flex-shrink:0) so Draw Deck's
+   flex:1 growth can never squeeze them down to zero height as the deck
+   fills up — Draw already scrolls internally (#deck-draw overflow-y:auto),
+   so it's the one that should absorb any space pressure, not its siblings. */
+.deck-section { display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+.deck-section-draw { flex: 1; min-height: 0; }
 
 .deck-section-title {
   font-size: 11px;

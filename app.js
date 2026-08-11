@@ -199,10 +199,9 @@ function countInDeck(card) {
 }
 
 function maxCopies(card) {
+  // No unique-card (★) cap — any card, including plots, up to 3 copies.
   if (card.type === 'House Card') return 1;
-  if (card.type === 'Agenda') return card.unique ? 1 : 3;
-  if (card.type === 'Plot')   return 2;
-  return card.unique ? 1 : 3;
+  return 3;
 }
 
 function totalPlots() { return Object.values(state.deck.plots).reduce((s, n) => s + n, 0); }
