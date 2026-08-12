@@ -205,9 +205,15 @@ main {
 }
 
 /* ── DECK PANEL ──────────────────────────────────────────── */
+/* 5 rows = #deck-slots, Agenda, Plots, Draw Deck, #deck-footer (in DOM
+   order). Only Draw Deck should get 1fr (unbounded content, scrolls via
+   #deck-draw) -- the previous "auto auto auto 1fr auto auto" had 6 values
+   for 5 children, so 1fr silently landed on Plots instead of Draw Deck,
+   which then grew unconstrained and pushed Plots out of the clipped
+   (overflow:hidden) panel entirely. */
 #deck-panel {
   display: grid;
-  grid-template-rows: auto auto auto 1fr auto auto;
+  grid-template-rows: auto auto auto 1fr auto;
   overflow: hidden;
   background: var(--surface);
 }
@@ -241,13 +247,12 @@ main {
 .slot-x:hover { color: var(--red); }
 .hidden { display: none !important; }
 
-/* deck sections */
-/* Agenda/Plots keep their natural size (flex-shrink:0) so Draw Deck's
-   flex:1 growth can never squeeze them down to zero height as the deck
-   fills up — Draw already scrolls internally (#deck-draw overflow-y:auto),
-   so it's the one that should absorb any space pressure, not its siblings. */
-.deck-section { display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
-.deck-section-draw { flex: 1; min-height: 0; }
+/* deck sections (grid items of #deck-panel, not a flex container --
+   flex-shrink/flex here do nothing; sizing is controlled by
+   grid-template-rows above). min-height:0 lets Draw Deck's cell actually
+   respect its 1fr allocation instead of growing to fit all 76+ rows. */
+.deck-section { display: flex; flex-direction: column; overflow: hidden; }
+.deck-section-draw { min-height: 0; }
 
 .deck-section-title {
   font-size: 11px;
